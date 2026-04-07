@@ -1,6 +1,6 @@
 # rocksmith-nix
 
-Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, and patch-rocksmith.
+Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, RS_ASIO, and declarative Home Manager module.
 
 Forked from [re1n0/nixos-rocksmith](https://github.com/re1n0/nixos-rocksmith), restructured to Daaboulex Nix Packaging Standard v1.1.
 
@@ -11,6 +11,32 @@ Forked from [re1n0/nixos-rocksmith](https://github.com/re1n0/nixos-rocksmith), r
 | `patch-rocksmith` | x86_64 | Shell script to register WineASIO in a Rocksmith Proton prefix |
 | `wineasio-32` | i686 | 32-bit ASIO-to-JACK driver for Wine (bridges Wine ASIO → PipeWire JACK) |
 | `rs-autoconnect` | i686 | `librsshim.so` — shim library that auto-connects Rocksmith's JACK ports to PipeWire |
+| `rs-asio` | x86_64 | RS_ASIO v0.7.4 DLLs — ASIO driver wrapper that intercepts Rocksmith's audio calls |
+
+## Home Manager Module
+
+The repo exports `homeManagerModules.default` — a full HM module that provides:
+
+- **`rocksmith-launch`** wrapper script (set as Steam launch option)
+- **RS_ASIO.dll + avrt.dll** deployed from Nix store (no network at runtime)
+- **RS_ASIO.ini** generated declaratively (WineASIO driver config)
+- **Rocksmith.ini** generated declaratively (game audio settings)
+- **WineASIO DLLs** auto-installed into Proton prefix
+- **WirePlumber rules** for GoXLR Line In → WineASIO routing (optional)
+- **Environment variables** (WINEDLLOVERRIDES, LD_PRELOAD, PIPEWIRE_LATENCY)
+
+### Options
+
+```nix
+myModules.home.rocksmith = {
+  enable = true;                        # Enable Rocksmith configuration
+  latencyBuffer = 2;                    # 1-4, lower = less latency (default: 2)
+  pipewireLatency = "256/48000";        # quantum/rate (default: "256/48000")
+  steamAppDir = "~/.steam/...";         # Auto-detected (default: standard Steam path)
+  goxlr.lineInRouting = true;           # WirePlumber rules for GoXLR Line In
+  goxlr.deviceName = "GoXLRMini";       # "GoXLRMini" or "GoXLR" (default: "GoXLRMini")
+};
+```
 
 ## Audio Chain
 
@@ -20,7 +46,7 @@ Guitar → 3.5mm cable → Audio Interface Line In
   → RS_ASIO → Rocksmith 2014
 ```
 
-On Windows, Rocksmith uses a native ASIO driver (e.g., GoXLR ASIO). On Linux, `wineasio-32` bridges Wine's ASIO calls to PipeWire's JACK emulation, and `rs-autoconnect` (`librsshim.so`) handles automatic JACK port routing.
+On Windows, Rocksmith uses a native ASIO driver (e.g., GoXLR ASIO). On Linux, `wineasio-32` bridges Wine's ASIO calls to PipeWire's JACK emulation, and `rs-autoconnect` (`librsshim.so`) handles automatic JACK port routing. RS_ASIO.dll intercepts Rocksmith's audio initialization and redirects it through WineASIO.
 
 ## Usage
 
@@ -34,40 +60,35 @@ inputs.rocksmith-nix = {
 };
 ```
 
-### 2. Add overlay to host config
+### 2. Wire into host config
 
 ```nix
-# In your nixosConfiguration
-nixpkgs.overlays = [
-  inputs.rocksmith-nix.overlays.default
-];
+# In host flake-module.nix
+
+# Overlay (provides pkgs.rs-asio, pkgs.wineasio-32, etc.)
+nixpkgs.overlays = [ inputs.rocksmith-nix.overlays.default ];
+
+# HM module
+home-manager.sharedModules = [ inputs.rocksmith-nix.homeManagerModules.default ];
+
+# NixOS module (Steam FHS injection + PAM limits)
+imports = [ inputs.self.nixosModules.gaming-rocksmith ];
 ```
 
-### 3. Use packages
-
-After the overlay is applied, the packages are available as:
-- `pkgs.patch-rocksmith`
-- `pkgs.wineasio-32`
-- `pkgs.rs-autoconnect`
-
-Inject them into Steam's FHS sandbox via `programs.steam.package` override:
+### 3. Enable in host HM config
 
 ```nix
-programs.steam.package = pkgs.steam.override {
-  extraLibraries = p: with p; [ pipewire.jack ];  # 32-bit libjack.so
-  extraPkgs = p: with p; [ patch-rocksmith wineasio-32 rs-autoconnect ];
-};
+myModules.home.rocksmith.enable = true;
+myModules.home.rocksmith.goxlr.lineInRouting = true;  # if using GoXLR
 ```
 
-### 4. Steam launch options
-
-Set in Steam UI (right-click Rocksmith 2014 → Properties → Launch Options):
+### 4. Set Steam launch option (one-time)
 
 ```
-WINEDLLOVERRIDES="wineasio=n,b" LD_PRELOAD=/usr/lib32/librsshim.so PIPEWIRE_LATENCY=256/48000 %command%
+rocksmith-launch %command%
 ```
 
-Or use a launch wrapper script that handles config deployment + environment setup automatically.
+That's it. Everything else is automatic on every game launch.
 
 ## System Requirements
 
@@ -79,9 +100,9 @@ Or use a launch wrapper script that handles config deployment + environment setu
 ## Development
 
 ```bash
-nix develop    # Enter dev shell (installs git hooks, provides nil LSP)
-nix fmt        # Format all Nix files (nixfmt-rfc-style)
-nix build      # Build default package (patch-rocksmith)
+nix develop      # Enter dev shell (installs git hooks, provides nil LSP)
+nix fmt          # Format all Nix files (nixfmt-rfc-style)
+nix build        # Build default package (patch-rocksmith)
 nix flake check  # Run all checks (eval + format)
 ```
 
@@ -91,6 +112,7 @@ Build individual packages:
 nix build .#patch-rocksmith
 nix build .#wineasio-32
 nix build .#rs-autoconnect
+nix build .#rs-asio
 ```
 
 ## CI/CD

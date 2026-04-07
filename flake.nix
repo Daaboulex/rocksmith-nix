@@ -1,5 +1,5 @@
 {
-  description = "Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, and patch-rocksmith";
+  description = "Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, RS_ASIO, and launch wrapper";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -37,6 +37,7 @@
         rs-autoconnect = final.pkgsi686Linux.callPackage ./pkgs/rs-autoconnect {
           inherit rs-linux-autoconnect;
         };
+        rs-asio = final.callPackage ./pkgs/rs-asio { };
       };
 
       packages = forAllSystems (
@@ -50,9 +51,13 @@
           rs-autoconnect = pkgs.pkgsi686Linux.callPackage ./pkgs/rs-autoconnect {
             inherit rs-linux-autoconnect;
           };
+          rs-asio = pkgs.callPackage ./pkgs/rs-asio { };
           default = self.packages.${system}.patch-rocksmith;
         }
       );
+
+      homeManagerModules.default = import ./hm-module.nix;
+      homeManagerModules.rocksmith = import ./hm-module.nix;
 
       formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
 
