@@ -96,33 +96,44 @@ let
       GAME_DIR="${cfg.steamAppDir}"
       PREFIX="${prefixDir}"
 
-      # --- Deploy RS_ASIO DLLs from Nix store (no network needed) ---
+      # --- Deploy all DLLs to game directory ---
+      # RS_ASIO searches the game dir first (GetWineAsioInfo uses LoadLibrary
+      # which follows Windows DLL search order: exe dir → system32 → PATH)
       if [ -d "$GAME_DIR" ]; then
+        # RS_ASIO wrapper DLLs
         cp -f ${pkgs.rs-asio}/lib/RS_ASIO.dll "$GAME_DIR/RS_ASIO.dll"
         cp -f ${pkgs.rs-asio}/lib/avrt.dll "$GAME_DIR/avrt.dll"
-      fi
-
-      # --- Deploy config files (survives Steam updates) ---
-      if [ -d "$GAME_DIR" ]; then
+        # WineASIO Windows-side DLL (must be findable by RS_ASIO's LoadLibrary call)
+        cp -f ${pkgs.wineasio-32}/lib/wine/i386-windows/wineasio32.dll "$GAME_DIR/wineasio32.dll"
+        # Config files
         cp -f ${rsAsioIni} "$GAME_DIR/RS_ASIO.ini"
         cp -f ${rocksmithIni} "$GAME_DIR/Rocksmith.ini"
       fi
 
-      # --- Install WineASIO DLLs into Proton prefix (survives prefix recreation) ---
+      # --- Deploy WineASIO Unix-side .so into Proton's Wine lib dir ---
+      # Wine needs BOTH the Windows .dll AND the Unix .dll.so to load a native DLL.
+      # The .dll.so must be in Proton's own lib dir, not the prefix.
+      # Discover the active Proton install by walking from the prefix.
       if [ -d "$PREFIX" ]; then
+        # Also put the Windows DLL in system32 as fallback
         SYSDIR="$PREFIX/drive_c/windows/system32"
         mkdir -p "$SYSDIR"
         cp -f ${pkgs.wineasio-32}/lib/wine/i386-windows/wineasio32.dll "$SYSDIR/wineasio32.dll"
-        # Unix-side .so goes into the Wine lib dir for the prefix
-        UNIXDIR="$PREFIX/../files/lib/wine/i386-unix"
-        if [ -d "$UNIXDIR" ]; then
-          cp -f ${pkgs.wineasio-32}/lib/wine/i386-unix/wineasio32.dll.so "$UNIXDIR/wineasio32.dll.so"
-        fi
-        # Also try the Proton lib path
-        PROTONDIR="$(dirname "$(readlink -f "$PREFIX/../files/bin/wine")" 2>/dev/null)/../lib/wine/i386-unix"
-        if [ -d "$PROTONDIR" ]; then
-          cp -f ${pkgs.wineasio-32}/lib/wine/i386-unix/wineasio32.dll.so "$PROTONDIR/wineasio32.dll.so" 2>/dev/null || true
-        fi
+
+        # Find the Proton install dir from the compatdata structure
+        # Steam stores it at compatdata/<appid>/../../common/<Proton>/files/lib/wine/i386-unix
+        # But we can reliably find it from STEAM_COMPAT_TOOL_PATHS or by scanning common/
+        STEAM_COMMON="$(dirname "$GAME_DIR")"
+        for PROTON_CANDIDATE in \
+          "$STEAM_COMMON/Proton - Experimental" \
+          "$STEAM_COMMON/Proton Hotfix" \
+          "$STEAM_COMMON/Proton 10.0" \
+          "$HOME/.local/share/Steam/compatibilitytools.d/Proton-CachyOS Latest"; do
+          UNIX_DIR="$PROTON_CANDIDATE/files/lib/wine/i386-unix"
+          if [ -d "$UNIX_DIR" ]; then
+            cp -f ${pkgs.wineasio-32}/lib/wine/i386-unix/wineasio32.dll.so "$UNIX_DIR/wineasio32.dll.so"
+          fi
+        done
       fi
 
       # --- Launch with the right environment ---
