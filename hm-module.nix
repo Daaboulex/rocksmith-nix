@@ -21,28 +21,28 @@ let
     BufferSizeMode=driver
 
     [Asio.Output]
-    Driver=WineASIO
+    Driver=wineasio-rsasio
     BaseChannel=0
     EnableSoftwareEndpointVolumeControl=1
     EnableSoftwareMasterVolumeControl=1
     SoftwareMasterVolumePercent=100
 
     [Asio.Input.0]
-    Driver=WineASIO
+    Driver=wineasio-rsasio
     Channel=0
     EnableSoftwareEndpointVolumeControl=1
     EnableSoftwareMasterVolumeControl=1
     SoftwareMasterVolumePercent=100
 
     [Asio.Input.1]
-    Driver=WineASIO
+    Driver=wineasio-rsasio
     Channel=1
     EnableSoftwareEndpointVolumeControl=1
     EnableSoftwareMasterVolumeControl=1
     SoftwareMasterVolumePercent=100
 
     [Asio.Input.Mic]
-    Driver=WineASIO
+    Driver=wineasio-rsasio
     Channel=2
     EnableSoftwareEndpointVolumeControl=1
     EnableSoftwareMasterVolumeControl=1
