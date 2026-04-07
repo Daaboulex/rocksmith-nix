@@ -120,6 +120,20 @@ let
         echo ""
       fi
 
+      # --- Replace sniper container's JACK2 with PipeWire's JACK ---
+      # The sniper container ships its own libjack.so.0 (JACK2) which tries to connect
+      # to a native JACK server that doesn't exist (only PipeWire runs).
+      # WineASIO dlopen's libjack.so.0 inside the container and gets the wrong one.
+      # Fix: overwrite the container's 32-bit JACK2 libs with PipeWire's JACK.
+      SNIPER_LIB32="$HOME/.steam/steam/steamapps/common/SteamLinuxRuntime_sniper/var/tmp-*/usr/lib/i386-linux-gnu"
+      for dir in $SNIPER_LIB32; do
+        if [ -d "$dir" ]; then
+          cp -f ${pkgs.pkgsi686Linux.pipewire.jack}/lib/libjack.so.0.3.* "$dir/" 2>/dev/null || true
+          ln -sf libjack.so.0.3.* "$dir/libjack.so.0" 2>/dev/null || true
+          ln -sf libjack.so.0.3.* "$dir/libjack.so" 2>/dev/null || true
+        fi
+      done
+
       # --- Launch with the right environment ---
       # CPU topology: Rocksmith crashes on 32+ logical processors (hard-coded engine bug)
       MAX=${toString cfg.maxCpus}
@@ -127,10 +141,6 @@ let
       export WINE_CPU_TOPOLOGY="$MAX:$CPU_LIST"
       # WineASIO: native DLL override (skips regsvr32 registration)
       export WINEDLLOVERRIDES="wineasio=n,b''${WINEDLLOVERRIDES:+;$WINEDLLOVERRIDES}"
-      # Sniper container remaps /usr/lib32/ to /run/host/usr/lib32/ which doesn't exist.
-      # Use Nix store paths directly — sniper bind-mounts /nix/store so these survive.
-      export LD_LIBRARY_PATH="${pkgs.pkgsi686Linux.pipewire.jack}/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-      export LD_PRELOAD="${pkgs.rs-autoconnect}/lib/librsshim.so:${pkgs.pkgsi686Linux.pipewire.jack}/lib/libjack.so''${LD_PRELOAD:+:$LD_PRELOAD}"
       # PipeWire quantum for this JACK client
       export PIPEWIRE_LATENCY="${cfg.pipewireLatency}"
       # Limit WineASIO input enumeration (prevents crash with multi-device setups like GoXLR)
