@@ -90,6 +90,28 @@ rocksmith-launch %command%
 
 That's it. Everything else is automatic on every game launch.
 
+Optional additions to the launch option:
+- `gamemoderun rocksmith-launch %command%` — enable gamemode (CPU governor + scheduling)
+- `MANGOHUD=1 rocksmith-launch %command%` — enable FPS overlay
+
+### What the launch wrapper does
+
+On every game start, `rocksmith-launch` automatically:
+
+1. Copies `RS_ASIO.dll` + `avrt.dll` from the Nix store into the game directory
+2. Deploys generated `RS_ASIO.ini` and `Rocksmith.ini`
+3. Copies `wineasio32.dll` into the Proton prefix
+4. Sets environment variables:
+
+| Variable | Value | Purpose |
+|---|---|---|
+| `WINEDLLOVERRIDES` | `wineasio=n,b` | Use native WineASIO DLL |
+| `LD_PRELOAD` | `librsshim.so:libjack.so` | JACK auto-connect + 32-bit JACK in FHS sandbox |
+| `PIPEWIRE_LATENCY` | `256/48000` | Match PipeWire quantum (configurable) |
+| `WINEASIO_NUMBER_INPUTS` | `2` | Prevent enumeration crash with multi-device setups |
+| `WINEASIO_FIXED_BUFFERSIZE` | `1` | Lock buffer to PipeWire quantum |
+| `WINEASIO_PREFERRED_BUFFERSIZE` | `256` | Derived from `pipewireLatency` option |
+
 ## System Requirements
 
 - **PipeWire** with JACK enabled (`services.pipewire.jack.enable = true`)
