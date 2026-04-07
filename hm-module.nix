@@ -122,6 +122,9 @@ let
       fi
 
       # --- Launch with the right environment ---
+      # CPU topology: Rocksmith crashes on 32+ logical processors (hard-coded engine bug)
+      # Limit Wine's reported CPU count to 16 cores
+      export WINE_CPU_TOPOLOGY="16:0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"
       # WineASIO: native DLL override (skips regsvr32 registration)
       export WINEDLLOVERRIDES="wineasio=n,b''${WINEDLLOVERRIDES:+;$WINEDLLOVERRIDES}"
       # rs-autoconnect: auto-connect JACK ports + 32-bit libjack for WineASIO
