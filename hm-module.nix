@@ -103,34 +103,47 @@ let
         cp -f ${rocksmithIni} "$GAME_DIR/Rocksmith.ini"
       fi
 
-      # --- Check WineASIO is installed (one-time manual step) ---
-      # WineASIO must be compiled against the SAME Wine as the running Proton.
-      # patch-rocksmith handles this but requires steam-run (interactive, one-time).
-      if [ -d "$GAME_DIR" ] && [ ! -f "$GAME_DIR/wineasio32.dll" ]; then
-        echo ""
-        echo "╔══════════════════════════════════════════════════════════════════╗"
-        echo "║  WineASIO not installed — audio will not work.                  ║"
-        echo "║                                                                  ║"
-        echo "║  Run this ONCE in your terminal:                                 ║"
-        echo "║    steam-run patch-rocksmith                                     ║"
-        echo "║                                                                  ║"
-        echo "║  This compiles WineASIO against your Proton version.             ║"
-        echo "║  Re-run after changing Proton versions.                          ║"
-        echo "╚══════════════════════════════════════════════════════════════════╝"
-        echo ""
+      # --- Deploy WineASIO DLLs from Nix store ---
+      # Copy wineasio32.dll to game dir + prefix (so RS_ASIO's LoadLibrary finds it)
+      # Copy .dll.so to ALL known Proton i386-unix dirs (Wine needs this to execute the DLL)
+      if [ -d "$GAME_DIR" ]; then
+        cp -f ${pkgs.wineasio-32}/lib/wine/i386-windows/wineasio32.dll "$GAME_DIR/wineasio32.dll"
       fi
+      for proton_dir in \
+        "$HOME/.steam/steam/steamapps/common/Proton - Experimental" \
+        "$HOME/.steam/steam/steamapps/common/Proton Hotfix" \
+        "$HOME/.steam/steam/steamapps/common/Proton 10.0" \
+        "$HOME/.local/share/Steam/compatibilitytools.d/Proton-CachyOS Latest"; do
+        UNIX_DIR="$proton_dir/files/lib/wine/i386-unix"
+        WIN_DIR="$proton_dir/files/lib/wine/i386-windows"
+        if [ -d "$UNIX_DIR" ]; then
+          cp -f ${pkgs.wineasio-32}/lib/wine/i386-unix/wineasio32.dll.so "$UNIX_DIR/wineasio32.dll.so"
+        fi
+        if [ -d "$WIN_DIR" ]; then
+          cp -f ${pkgs.wineasio-32}/lib/wine/i386-windows/wineasio32.dll "$WIN_DIR/wineasio32.dll"
+        fi
+      done
 
       # --- Replace sniper container's JACK2 with PipeWire's JACK ---
       # The sniper container ships its own libjack.so.0 (JACK2) which tries to connect
       # to a native JACK server that doesn't exist (only PipeWire runs).
       # WineASIO dlopen's libjack.so.0 inside the container and gets the wrong one.
-      # Fix: overwrite the container's 32-bit JACK2 libs with PipeWire's JACK.
-      SNIPER_LIB32="$HOME/.steam/steam/steamapps/common/SteamLinuxRuntime_sniper/var/tmp-*/usr/lib/i386-linux-gnu"
-      for dir in $SNIPER_LIB32; do
+      # Fix: overwrite the container's 32-bit and 64-bit JACK2 libs with PipeWire's JACK.
+      SNIPER_BASE="$HOME/.steam/steam/steamapps/common/SteamLinuxRuntime_sniper/var"
+      PW_JACK32="${pkgs.pkgsi686Linux.pipewire.jack}/lib"
+      PW_JACK64="${pkgs.pipewire.jack}/lib"
+      for dir in "$SNIPER_BASE"/tmp-*/usr/lib/i386-linux-gnu; do
         if [ -d "$dir" ]; then
-          cp -f ${pkgs.pkgsi686Linux.pipewire.jack}/lib/libjack.so.0.3.* "$dir/" 2>/dev/null || true
-          ln -sf libjack.so.0.3.* "$dir/libjack.so.0" 2>/dev/null || true
-          ln -sf libjack.so.0.3.* "$dir/libjack.so" 2>/dev/null || true
+          cp -f "$PW_JACK32"/libjack.so.0.* "$dir/libjack.so.0" 2>/dev/null || true
+          cp -f "$PW_JACK32"/libjackserver.so.0.* "$dir/libjackserver.so.0" 2>/dev/null || true
+          cp -f "$PW_JACK32"/libjacknet.so.0.* "$dir/libjacknet.so.0" 2>/dev/null || true
+        fi
+      done
+      for dir in "$SNIPER_BASE"/tmp-*/usr/lib/x86_64-linux-gnu; do
+        if [ -d "$dir" ]; then
+          cp -f "$PW_JACK64"/libjack.so.0.* "$dir/libjack.so.0" 2>/dev/null || true
+          cp -f "$PW_JACK64"/libjackserver.so.0.* "$dir/libjackserver.so.0" 2>/dev/null || true
+          cp -f "$PW_JACK64"/libjacknet.so.0.* "$dir/libjacknet.so.0" 2>/dev/null || true
         fi
       done
 
