@@ -1,55 +1,40 @@
-# NixOS Rocksmith 🎸
+# rocksmith-nix
 
-Simplify the setup of Rocksmith 2014 on NixOS!
+Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, and patch-rocksmith.
 
-## ❄️ Flake
+Forked from [re1n0/nixos-rocksmith](https://github.com/re1n0/nixos-rocksmith), restructured to [Daaboulex Nix Packaging Standard v1.1](https://github.com/Daaboulex).
 
-In order to use this, you need to include it in your flake's inputs like this:
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| `patch-rocksmith` | Script to register WineASIO in Rocksmith's Proton prefix |
+| `wineasio-32` | 32-bit ASIO-to-JACK driver for Wine |
+| `rs-autoconnect` | Shim library (`librsshim.so`) for automatic PipeWire/JACK port connection |
+
+## Usage
+
+Add as a flake input and use the overlay:
 
 ```nix
 # flake.nix
-{
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+inputs.rocksmith-nix = {
+  url = "github:Daaboulex/rocksmith-nix";
+  inputs.nixpkgs.follows = "nixpkgs";
+};
 
-    nixos-rocksmith = {
-      url = "github:re1n0/nixos-rocksmith";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
-
-  outputs = {self, nixpkgs, ...}@inputs: {
-    nixosConfigurations.default = nixpkgs.lib.nixosSystem {
-      specialArgs = {inherit inputs;};
-      modules = [
-        inputs.nixos-rocksmith.nixosModules.default
-        ./configuration.nix
-      ];
-    };
-  };
-}
+# In host config (overlay)
+nixpkgs.overlays = [ inputs.rocksmith-nix.overlays.default ];
 ```
 
-## ⚙ Example Configuration
+Then the packages are available as `pkgs.patch-rocksmith`, `pkgs.wineasio-32`, and `pkgs.rs-autoconnect`.
 
-```nix
-# configuration.nix
-{
-  # ...
+## Credits
 
-  # Add user to `audio` and `rtkit` groups.
-  users.users.<username>.extraGroups = [ "audio" "rtkit" ];
+- [re1n0/nixos-rocksmith](https://github.com/re1n0/nixos-rocksmith) — original NixOS flake
+- [nizo/linux-rocksmith](https://codeberg.org/nizo/linux-rocksmith) — Linux Rocksmith setup guides and scripts
+- [KczBen/rs-linux-autoconnect](https://github.com/KczBen/rs-linux-autoconnect) — JACK auto-connect shim
 
-  programs.steam = {
-    enable = true;
-    rocksmithPatch.enable = true;
-  };
+## License
 
-  # ...
-}
-```
-
-## 🔍 Further Instructions
-
-Tips for running Rocksmith 2014 on Linux are available in [linux-rocksmith](https://codeberg.org/nizo/linux-rocksmith) repo.
-Go check them out for potential troubleshooting or setting Launch Options on Steam. 
+GPL-3.0 (inherited from upstream)

@@ -1,23 +1,18 @@
 {
-  inputs,
+  rs-linux-autoconnect,
   lib,
   stdenv,
   cmake,
   libjack2,
 }:
-stdenv.mkDerivation (finalAttrs: {
+stdenv.mkDerivation {
   pname = "rs-autoconnect";
   version = "1.1.1";
 
-  src = inputs.rs-linux-autoconnect;
+  src = rs-linux-autoconnect;
 
-  nativeBuildInputs = [
-    cmake
-  ];
-
-  buildInputs = [
-    libjack2
-  ];
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ libjack2 ];
 
   installPhase = ''
     mkdir -p $out/lib
@@ -25,10 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    description = "A shim library to automatically connect Rocksmith 2014 on Linux to pipewire inputs and outputs";
+    description = "Shim library to automatically connect Rocksmith 2014 to PipeWire/JACK inputs and outputs";
+    homepage = "https://github.com/KczBen/rs-linux-autoconnect";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [
-      rein
-    ];
   };
-})
+}

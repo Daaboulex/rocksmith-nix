@@ -1,8 +1,12 @@
-# ---> Nix
-# Ignore build outputs from performing a nix-build or `nix build` command
 result
+
+# AI tracking (local only)
+AI-progress.json
+AI-tasks.json
+CLAUDE.md
+GEMINI.md
+.claude/
+.gemini/
 result-*
-
-# Ignore automatically generated direnv output
 .direnv
-
+.envrc

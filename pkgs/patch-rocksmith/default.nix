@@ -1,5 +1,5 @@
 {
-  inputs,
+  linux-rocksmith,
   lib,
   writeShellApplication,
   bash,
@@ -23,22 +23,12 @@ writeShellApplication {
     wget
   ];
 
-  text = inputs.linux-rocksmith + "/scripts/patch-nixos.sh";
+  text = linux-rocksmith + "/scripts/patch-nixos.sh";
 
   meta = {
-    description = "Script to patch Rocksmith 2014";
-    homepage = "https://github.com/theNizo/linux_rocksmith";
+    description = "Script to patch Rocksmith 2014 for Linux (WineASIO registration)";
+    homepage = "https://codeberg.org/nizo/linux-rocksmith";
     license = lib.licenses.gpl3Plus;
-    version = builtins.substring 0 10 inputs.linux-rocksmith.locked.time;
-    maintainers = with lib.maintainers; [
-      rein
-    ];
-
-    postInstall = ''
-      mkdir -p $out/share/man/man1
-      install -m644 docs/patch-rocksmith.1 $out/share/man/patch-rocksmith.1
-    '';
-
     mainProgram = "patch-rocksmith";
   };
 }

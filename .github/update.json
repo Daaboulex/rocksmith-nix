@@ -1,0 +1,13 @@
+{
+  "package": "rocksmith",
+  "upstream": {
+    "type": "none"
+  },
+  "packageFile": null,
+  "hashes": [],
+  "verify": {
+    "binary": null,
+    "args": null,
+    "check": "wrapper"
+  }
+}
