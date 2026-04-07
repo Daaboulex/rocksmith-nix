@@ -169,21 +169,23 @@ in
     home.packages = [ launchScript ];
 
     # WirePlumber auto-routing for GoXLR Line In
-    xdg.configFile."wireplumber/wireplumber.conf.d/90-rocksmith.conf" = lib.mkIf cfg.goxlr.lineInRouting {
-      text = ''
-        monitor.alsa.rules = [
-          {
-            matches = [
-              { node.name = "~wineasio*" }
-            ]
-            actions = {
-              update-props = {
-                node.target = "alsa_input.usb-TC-Helicon_${cfg.goxlr.deviceName}-00.HiFi__Line1__source"
+    xdg.configFile."wireplumber/wireplumber.conf.d/90-rocksmith.conf" =
+      lib.mkIf cfg.goxlr.lineInRouting
+        {
+          text = ''
+            monitor.alsa.rules = [
+              {
+                matches = [
+                  { node.name = "~wineasio*" }
+                ]
+                actions = {
+                  update-props = {
+                    node.target = "alsa_input.usb-TC-Helicon_${cfg.goxlr.deviceName}-00.HiFi__Line1__source"
+                  }
+                }
               }
-            }
-          }
-        ]
-      '';
-    };
+            ]
+          '';
+        };
   };
 }
