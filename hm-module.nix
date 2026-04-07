@@ -122,9 +122,16 @@ let
       fi
 
       # --- Launch with the right environment ---
+      # WineASIO: native DLL override (skips regsvr32 registration)
       export WINEDLLOVERRIDES="wineasio=n,b''${WINEDLLOVERRIDES:+;$WINEDLLOVERRIDES}"
-      export LD_PRELOAD="/usr/lib32/librsshim.so''${LD_PRELOAD:+:$LD_PRELOAD}"
+      # rs-autoconnect: auto-connect JACK ports + 32-bit libjack for WineASIO
+      export LD_PRELOAD="/usr/lib32/librsshim.so:/usr/lib32/libjack.so''${LD_PRELOAD:+:$LD_PRELOAD}"
+      # PipeWire quantum for this JACK client
       export PIPEWIRE_LATENCY="${cfg.pipewireLatency}"
+      # Limit WineASIO input enumeration (prevents crash with multi-device setups like GoXLR)
+      export WINEASIO_NUMBER_INPUTS=2
+      export WINEASIO_FIXED_BUFFERSIZE=1
+      export WINEASIO_PREFERRED_BUFFERSIZE=''${PIPEWIRE_LATENCY%%/*}
 
       exec "$@"
     '';
