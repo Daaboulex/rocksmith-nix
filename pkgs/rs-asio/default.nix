@@ -7,7 +7,7 @@ fetchzip {
   version = "0.7.4";
 
   url = "https://github.com/mdias/rs_asio/releases/download/v0.7.4/release-0.7.4.zip";
-  hash = "sha256-LksYh6EHgql9OZ+El0uq6mBUcWymj6EpFaHqHJSLnMA=";
+  hash = "sha256-M9oItYQuqbfbgzYiiuX2+0rW/iGecCfAc3kt4XUz9tU=";
   stripRoot = false;
 
   postFetch = ''
