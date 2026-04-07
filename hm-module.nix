@@ -94,7 +94,6 @@ let
     ];
     text = ''
       GAME_DIR="${cfg.steamAppDir}"
-      PREFIX="${prefixDir}"
 
       # --- Deploy RS_ASIO DLLs + config files to game directory ---
       if [ -d "$GAME_DIR" ]; then
