@@ -103,21 +103,21 @@ let
         cp -f ${rocksmithIni} "$GAME_DIR/Rocksmith.ini"
       fi
 
-      # --- Install WineASIO via patch-rocksmith (one-time) ---
-      # WineASIO .dll.so MUST be compiled against the SAME Wine version as the
-      # running Proton. Pre-built wineasio-32 from nixpkgs uses Wine 11.0 but
-      # Proton Experimental uses Wine 10.0 — ABI mismatch causes silent failure.
-      # patch-rocksmith compiles WineASIO using Proton's own Wine, ensuring compatibility.
-      # It only needs to run once per Proton version change.
+      # --- Check WineASIO is installed (one-time manual step) ---
+      # WineASIO must be compiled against the SAME Wine as the running Proton.
+      # patch-rocksmith handles this but requires steam-run (interactive, one-time).
       if [ -d "$GAME_DIR" ] && [ ! -f "$GAME_DIR/wineasio32.dll" ]; then
-        echo "[rocksmith-launch] WineASIO not installed — running patch-rocksmith..."
-        echo "[rocksmith-launch] This is a one-time setup (re-runs on Proton version change)."
-        if command -v patch-rocksmith &>/dev/null; then
-          patch-rocksmith || echo "[rocksmith-launch] patch-rocksmith failed — audio may not work"
-        else
-          echo "[rocksmith-launch] ERROR: patch-rocksmith not in PATH"
-          echo "[rocksmith-launch] Run 'steam-run patch-rocksmith' manually"
-        fi
+        echo ""
+        echo "╔══════════════════════════════════════════════════════════════════╗"
+        echo "║  WineASIO not installed — audio will not work.                  ║"
+        echo "║                                                                  ║"
+        echo "║  Run this ONCE in your terminal:                                 ║"
+        echo "║    steam-run patch-rocksmith                                     ║"
+        echo "║                                                                  ║"
+        echo "║  This compiles WineASIO against your Proton version.             ║"
+        echo "║  Re-run after changing Proton versions.                          ║"
+        echo "╚══════════════════════════════════════════════════════════════════╝"
+        echo ""
       fi
 
       # --- Launch with the right environment ---
