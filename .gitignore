@@ -1,4 +1,9 @@
 result
+result-*
+.direnv
+.envrc
+.pre-commit-config.yaml
+__pycache__/
 
 # AI tracking (local only)
 AI-progress.json
@@ -7,6 +12,3 @@ CLAUDE.md
 GEMINI.md
 .claude/
 .gemini/
-result-*
-.direnv
-.envrc
