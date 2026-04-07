@@ -21,26 +21,29 @@ let
     BufferSizeMode=driver
 
     [Asio.Output]
-    Driver=wineasio-rsasio
+    Driver=WineASIO
     BaseChannel=0
     EnableSoftwareEndpointVolumeControl=1
     EnableSoftwareMasterVolumeControl=1
     SoftwareMasterVolumePercent=100
 
     [Asio.Input.0]
-    Driver=wineasio-rsasio
-    Channel=-1
+    Driver=WineASIO
+    Channel=0
     EnableSoftwareEndpointVolumeControl=1
     EnableSoftwareMasterVolumeControl=1
     SoftwareMasterVolumePercent=100
 
     [Asio.Input.1]
-    Driver=
-    Channel=-1
+    Driver=WineASIO
+    Channel=1
+    EnableSoftwareEndpointVolumeControl=1
+    EnableSoftwareMasterVolumeControl=1
+    SoftwareMasterVolumePercent=100
 
     [Asio.Input.Mic]
-    Driver=wineasio-rsasio
-    Channel=1
+    Driver=WineASIO
+    Channel=2
     EnableSoftwareEndpointVolumeControl=1
     EnableSoftwareMasterVolumeControl=1
     SoftwareMasterVolumePercent=100
@@ -109,15 +112,16 @@ let
       if [ -d "$PREFIX" ]; then
         SYSDIR="$PREFIX/drive_c/windows/system32"
         mkdir -p "$SYSDIR"
-
-        WINEASIO_DLL=$(find /usr/lib32 /usr/lib -name "wineasio32.dll" -print -quit 2>/dev/null || true)
-        WINEASIO_SO=$(find /usr/lib32 /usr/lib -name "wineasio32.dll.so" -print -quit 2>/dev/null || true)
-
-        if [ -n "$WINEASIO_DLL" ]; then
-          cp -f "$WINEASIO_DLL" "$SYSDIR/wineasio32.dll"
+        cp -f ${pkgs.wineasio-32}/lib/wine/i386-windows/wineasio32.dll "$SYSDIR/wineasio32.dll"
+        # Unix-side .so goes into the Wine lib dir for the prefix
+        UNIXDIR="$PREFIX/../files/lib/wine/i386-unix"
+        if [ -d "$UNIXDIR" ]; then
+          cp -f ${pkgs.wineasio-32}/lib/wine/i386-unix/wineasio32.dll.so "$UNIXDIR/wineasio32.dll.so"
         fi
-        if [ -n "$WINEASIO_SO" ]; then
-          cp -f "$WINEASIO_SO" "$SYSDIR/wineasio32.dll.so"
+        # Also try the Proton lib path
+        PROTONDIR="$(dirname "$(readlink -f "$PREFIX/../files/bin/wine")" 2>/dev/null)/../lib/wine/i386-unix"
+        if [ -d "$PROTONDIR" ]; then
+          cp -f ${pkgs.wineasio-32}/lib/wine/i386-unix/wineasio32.dll.so "$PROTONDIR/wineasio32.dll.so" 2>/dev/null || true
         fi
       fi
 
