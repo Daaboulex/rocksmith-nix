@@ -122,12 +122,14 @@ let
 
       # --- Launch with the right environment ---
       # CPU topology: Rocksmith crashes on 32+ logical processors (hard-coded engine bug)
-      # Generate WINE_CPU_TOPOLOGY dynamically from maxCpus option
       MAX=${toString cfg.maxCpus}
       CPU_LIST=$(seq -s, 0 $((MAX - 1)))
       export WINE_CPU_TOPOLOGY="$MAX:$CPU_LIST"
       # WineASIO: native DLL override (skips regsvr32 registration)
       export WINEDLLOVERRIDES="wineasio=n,b''${WINEDLLOVERRIDES:+;$WINEDLLOVERRIDES}"
+      # 32-bit PipeWire JACK lib path MUST be in LD_LIBRARY_PATH for Wine's 32-bit dlopen.
+      # Steam's FHS only sets the 64-bit path, so Wine can't find 32-bit libjack.so.0.
+      export LD_LIBRARY_PATH="/usr/lib32''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
       # rs-autoconnect: auto-connect JACK ports + 32-bit libjack for WineASIO
       export LD_PRELOAD="/usr/lib32/librsshim.so:/usr/lib32/libjack.so''${LD_PRELOAD:+:$LD_PRELOAD}"
       # PipeWire quantum for this JACK client
