@@ -1,5 +1,7 @@
 # rocksmith-nix
 
+[![CI](https://github.com/Daaboulex/rocksmith-nix/actions/workflows/ci.yml/badge.svg)](https://github.com/Daaboulex/rocksmith-nix/actions/workflows/ci.yml)
+
 Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, RS_ASIO, and declarative Home Manager module.
 
 Forked from [re1n0/nixos-rocksmith](https://github.com/re1n0/nixos-rocksmith), restructured to Daaboulex Nix Packaging Standard v1.1.
