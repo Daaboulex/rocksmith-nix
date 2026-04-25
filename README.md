@@ -9,7 +9,28 @@
 
 Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, RS_ASIO, and declarative Home Manager module.
 
-Forked from [re1n0/nixos-rocksmith](https://github.com/re1n0/nixos-rocksmith), restructured to Daaboulex Nix Packaging Standard v1.1.
+## Upstream
+
+This is a **Nix-friendly fork** — credits to all upstream projects:
+
+- **Forked from**: [re1n0/nixos-rocksmith](https://github.com/re1n0/nixos-rocksmith) — original NixOS flake (restructured here to Daaboulex Nix Packaging Standard v1.x)
+- **Linux setup reference**: [nizo/linux-rocksmith](https://codeberg.org/nizo/linux-rocksmith)
+- **JACK auto-connect shim (`librsshim.so`)**: [KczBen/rs-linux-autoconnect](https://github.com/KczBen/rs-linux-autoconnect)
+- **WineASIO driver**: [wineasio/wineasio](https://github.com/wineasio/wineasio)
+- **RS_ASIO wrapper**: [mdias/rs_asio](https://github.com/mdias/rs_asio)
+- **License**: GPL-3.0 (inherited from upstream)
+
+This repo does **not** redistribute Rocksmith 2014 itself — it ships only the audio glue + launch wrapper. You must own the game on Steam.
+
+## What Is This?
+
+A Nix flake that wires together every Linux component needed to play Rocksmith 2014 on NixOS:
+
+- **Four packages** — `patch-rocksmith` shell helper, `wineasio-32` (32-bit Wine ASIO bridge), `rs-autoconnect` (JACK auto-connect shim), `rs-asio` (Rocksmith's ASIO wrapper DLL)
+- **Home Manager module** — generates `RS_ASIO.ini` + `Rocksmith.ini` declaratively, deploys DLLs into the Proton prefix on every launch, exports a `rocksmith-launch` Steam wrapper that does the dance automatically
+- **NixOS module** — Steam FHS injection (so 32-bit `libjack.so` is reachable inside the sandbox) + PAM realtime limits for the `@audio` group
+- **Optional GoXLR Line-In routing** — WirePlumber rules wiring guitar input through GoXLR Mini/Full
+- **Eval + format CI** — no upstream-tracking workflow (own code), weekly `flake.lock` maintenance only
 
 ## Packages
 
