@@ -1,26 +1,21 @@
 # rocksmith-nix
 
-[![CI](https://github.com/Daaboulex/rocksmith-nix/actions/workflows/ci.yml/badge.svg)](https://github.com/Daaboulex/rocksmith-nix/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/Daaboulex/rocksmith-nix)](./LICENSE)
-[![NixOS](https://img.shields.io/badge/NixOS-unstable-78C0E8?logo=nixos&logoColor=white)](https://nixos.org)
-[![Last commit](https://img.shields.io/github/last-commit/Daaboulex/rocksmith-nix)](https://github.com/Daaboulex/rocksmith-nix/commits)
-[![Stars](https://img.shields.io/github/stars/Daaboulex/rocksmith-nix?style=flat)](https://github.com/Daaboulex/rocksmith-nix/stargazers)
-[![Issues](https://img.shields.io/github/issues/Daaboulex/rocksmith-nix)](https://github.com/Daaboulex/rocksmith-nix/issues)
+<!-- BEGIN generated:badges -->
+[![NixOS unstable](https://img.shields.io/badge/NixOS-unstable-78C0E8?logo=nixos&logoColor=white)](https://nixos.org)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](./LICENSE)
+<!-- END generated:badges -->
 
 Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, RS_ASIO, and declarative Home Manager module.
 
+<!-- BEGIN generated:upstream -->
 ## Upstream
 
-This is a **Nix-friendly fork** — credits to all upstream projects:
-
-- **Forked from**: [re1n0/nixos-rocksmith](https://github.com/re1n0/nixos-rocksmith) — original NixOS flake (restructured here to Daaboulex Nix Packaging Standard v1.x)
-- **Linux setup reference**: [nizo/linux-rocksmith](https://codeberg.org/nizo/linux-rocksmith)
-- **JACK auto-connect shim (`librsshim.so`)**: [KczBen/rs-linux-autoconnect](https://github.com/KczBen/rs-linux-autoconnect)
-- **WineASIO driver**: [wineasio/wineasio](https://github.com/wineasio/wineasio)
-- **RS_ASIO wrapper**: [mdias/rs_asio](https://github.com/mdias/rs_asio)
-- **License**: GPL-3.0 (inherited from upstream)
-
-This repo does **not** redistribute Rocksmith 2014 itself — it ships only the audio glue + launch wrapper. You must own the game on Steam.
+| | |
+|---|---|
+| **Project** | Original code (no upstream) |
+| **License** | N/A |
+| **Tracked** | N/A |
+<!-- END generated:upstream -->
 
 ## What Is This?
 
@@ -75,6 +70,30 @@ Guitar → 3.5mm cable → Audio Interface Line In
 ```
 
 On Windows, Rocksmith uses a native ASIO driver (e.g., GoXLR ASIO). On Linux, `wineasio-32` bridges Wine's ASIO calls to PipeWire's JACK emulation, and `rs-autoconnect` (`librsshim.so`) handles automatic JACK port routing. RS_ASIO.dll intercepts Rocksmith's audio initialization and redirects it through WineASIO.
+
+<!-- BEGIN generated:installation -->
+## Installation
+
+Add as a flake input:
+
+```nix
+{
+  inputs.rocksmith = {
+    url = "github:Daaboulex/rocksmith-nix";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+}
+```
+
+Then use the package:
+
+```nix
+{ pkgs, inputs, ... }:
+{
+  environment.systemPackages = [ inputs.rocksmith.packages.${pkgs.system}.default ];
+}
+```
+<!-- END generated:installation -->
 
 ## Usage
 
@@ -185,3 +204,9 @@ All GitHub Actions are pinned to full commit SHAs for reproducibility.
 ## License
 
 GPL-3.0 (inherited from upstream)
+
+<!-- BEGIN generated:footer -->
+---
+
+*Maintained as part of the [Daaboulex](https://github.com/Daaboulex) NixOS ecosystem.*
+<!-- END generated:footer -->
