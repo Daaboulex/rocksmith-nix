@@ -3,9 +3,19 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     git-hooks = {
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    std = {
+      url = "github:Daaboulex/nix-packaging-standard?ref=v2.2.2";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.git-hooks.follows = "git-hooks";
     };
     # Non-flake sources (upstream scripts and libs)
     linux-rocksmith = {
@@ -19,76 +29,53 @@
   };
 
   outputs =
-    {
+    inputs@{
+      flake-parts,
       self,
-      nixpkgs,
-      git-hooks,
       linux-rocksmith,
       rs-linux-autoconnect,
+      ...
     }:
-    let
+    flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" ];
-      forAllSystems = nixpkgs.lib.genAttrs systems;
-    in
-    {
-      overlays.default = final: prev: {
-        patch-rocksmith = final.callPackage ./pkgs/patch-rocksmith { inherit linux-rocksmith; };
-        wineasio-32 = final.pkgsi686Linux.callPackage ./pkgs/wineasio-32 { };
-        rs-autoconnect = final.pkgsi686Linux.callPackage ./pkgs/rs-autoconnect {
+
+      imports = [ inputs.std.flakeModules.base ];
+
+      flake.overlays.default = _final: prev: {
+        patch-rocksmith = prev.callPackage ./pkgs/patch-rocksmith { inherit linux-rocksmith; };
+        wineasio-32 = prev.pkgsi686Linux.callPackage ./pkgs/wineasio-32 { };
+        rs-autoconnect = prev.pkgsi686Linux.callPackage ./pkgs/rs-autoconnect {
           inherit rs-linux-autoconnect;
         };
-        rs-asio = final.callPackage ./pkgs/rs-asio { };
+        rs-asio = prev.callPackage ./pkgs/rs-asio { };
       };
 
-      packages = forAllSystems (
-        system:
-        let
-          pkgs = import nixpkgs { localSystem.system = system; };
-        in
+      flake.homeManagerModules.default = import ./hm-module.nix;
+      flake.homeManagerModules.rocksmith = import ./hm-module.nix;
+
+      perSystem =
         {
-          patch-rocksmith = pkgs.callPackage ./pkgs/patch-rocksmith { inherit linux-rocksmith; };
-          wineasio-32 = pkgs.pkgsi686Linux.callPackage ./pkgs/wineasio-32 { };
-          rs-autoconnect = pkgs.pkgsi686Linux.callPackage ./pkgs/rs-autoconnect {
+          system,
+          pkgs,
+          self',
+          ...
+        }:
+        {
+          packages.patch-rocksmith = pkgs.callPackage ./pkgs/patch-rocksmith { inherit linux-rocksmith; };
+          packages.wineasio-32 = pkgs.pkgsi686Linux.callPackage ./pkgs/wineasio-32 { };
+          packages.rs-autoconnect = pkgs.pkgsi686Linux.callPackage ./pkgs/rs-autoconnect {
             inherit rs-linux-autoconnect;
           };
-          rs-asio = pkgs.callPackage ./pkgs/rs-asio { };
-          default = self.packages.${system}.patch-rocksmith;
-        }
-      );
+          packages.rs-asio = pkgs.callPackage ./pkgs/rs-asio { };
+          packages.default = self'.packages.patch-rocksmith;
 
-      homeManagerModules.default = import ./hm-module.nix;
-      homeManagerModules.rocksmith = import ./hm-module.nix;
-
-      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
-
-      checks = forAllSystems (system: {
-        pre-commit-check = git-hooks.lib.${system}.run {
-          src = self;
-          hooks.nixfmt-rfc-style.enable = true;
-          hooks.typos.enable = true;
-          hooks.rumdl.enable = true;
-          hooks.check-readme-sections = {
-            enable = true;
-            name = "check-readme-sections";
-            entry = "bash scripts/check-readme-sections.sh";
-            files = "README\.md$";
-            language = "system";
+          checks.module-eval-hm = inputs.std.lib.homeModuleCheck {
+            inherit (inputs) nixpkgs home-manager;
+            inherit system;
+            overlays = [ self.overlays.default ];
+            module = ./hm-module.nix;
+            config.myModules.home.rocksmith.enable = true;
           };
         };
-      });
-
-      devShells = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in
-        {
-          default = pkgs.mkShell {
-            inherit (self.checks.${system}.pre-commit-check) shellHook;
-            buildInputs = self.checks.${system}.pre-commit-check.enabledPackages;
-            packages = [ pkgs.nil ];
-          };
-        }
-      );
     };
 }

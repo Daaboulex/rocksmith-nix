@@ -16,6 +16,7 @@ Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, RS_ASIO, and dec
 | **Project** | Original code (no upstream) |
 | **License** | N/A |
 | **Tracked** | N/A |
+
 <!-- END generated:upstream -->
 
 ## What Is This?
@@ -24,7 +25,6 @@ A Nix flake that wires together every Linux component needed to play Rocksmith 2
 
 - **Four packages** — `patch-rocksmith` shell helper, `wineasio-32` (32-bit Wine ASIO bridge), `rs-autoconnect` (JACK auto-connect shim), `rs-asio` (Rocksmith's ASIO wrapper DLL)
 - **Home Manager module** — generates `RS_ASIO.ini` + `Rocksmith.ini` declaratively, deploys DLLs into the Proton prefix on every launch, exports a `rocksmith-launch` Steam wrapper that does the dance automatically
-- **NixOS module** — Steam FHS injection (so 32-bit `libjack.so` is reachable inside the sandbox) + PAM realtime limits for the `@audio` group
 - **Optional GoXLR Line-In routing** — WirePlumber rules wiring guitar input through GoXLR Mini/Full
 - **Eval + format CI** — no upstream-tracking workflow (own code), weekly `flake.lock` maintenance only
 
@@ -47,7 +47,7 @@ The repo exports `homeManagerModules.default` — a full HM module that provides
 - **Rocksmith.ini** generated declaratively (game audio settings)
 - **WineASIO DLLs** auto-installed into Proton prefix
 - **WirePlumber rules** for GoXLR Line In → WineASIO routing (optional)
-- **Environment variables** (WINEDLLOVERRIDES, LD_PRELOAD, PIPEWIRE_LATENCY)
+- **Wine/PipeWire environment** (WINEDLLOVERRIDES + 32/64-bit JACK library paths)
 
 ### Options
 
@@ -64,7 +64,7 @@ myModules.home.rocksmith = {
 
 ## Audio Chain
 
-```
+```text
 Guitar → 3.5mm cable → Audio Interface Line In
   → PipeWire/ALSA capture → PipeWire JACK → WineASIO (32-bit)
   → RS_ASIO → Rocksmith 2014
@@ -94,6 +94,7 @@ Then use the package:
   environment.systemPackages = [ inputs.rocksmith.packages.${pkgs.system}.default ];
 }
 ```
+
 <!-- END generated:installation -->
 
 ## Usage
@@ -118,9 +119,6 @@ nixpkgs.overlays = [ inputs.rocksmith-nix.overlays.default ];
 
 # HM module
 home-manager.sharedModules = [ inputs.rocksmith-nix.homeManagerModules.default ];
-
-# NixOS module (Steam FHS injection + PAM limits)
-imports = [ inputs.self.nixosModules.gaming-rocksmith ];
 ```
 
 ### 3. Enable in host HM config
@@ -132,13 +130,14 @@ myModules.home.rocksmith.goxlr.lineInRouting = true;  # if using GoXLR
 
 ### 4. Set Steam launch option (one-time)
 
-```
+```text
 rocksmith-launch %command%
 ```
 
 That's it. Everything else is automatic on every game launch.
 
 Optional additions to the launch option:
+
 - `gamemoderun rocksmith-launch %command%` — enable gamemode (CPU governor + scheduling)
 - `MANGOHUD=1 rocksmith-launch %command%` — enable FPS overlay
 
@@ -154,7 +153,6 @@ On every game start, `rocksmith-launch` automatically:
 | Variable | Value | Purpose |
 |---|---|---|
 | `WINEDLLOVERRIDES` | `wineasio=n,b` | Use native WineASIO DLL |
-| `LD_PRELOAD` | `librsshim.so:libjack.so` | JACK auto-connect + 32-bit JACK in FHS sandbox |
 | `PIPEWIRE_LATENCY` | `256/48000` | Match PipeWire quantum (configurable) |
 | `WINEASIO_NUMBER_INPUTS` | `2` | Prevent enumeration crash with multi-device setups |
 | `WINEASIO_FIXED_BUFFERSIZE` | `1` | Lock buffer to PipeWire quantum |
