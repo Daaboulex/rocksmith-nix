@@ -24,5 +24,8 @@
     "wine",
     "audio",
     "guitar"
-  ]
+  ],
+  "platforms": {
+    "aarch64-linux": "Wine/Proton x86 game + pkgsi686Linux (wineasio-32)"
+  }
 }
