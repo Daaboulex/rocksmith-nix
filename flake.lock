@@ -162,24 +162,7 @@
         "home-manager": "home-manager",
         "linux-rocksmith": "linux-rocksmith",
         "nixpkgs": "nixpkgs",
-        "rs-linux-autoconnect": "rs-linux-autoconnect",
         "std": "std"
-      }
-    },
-    "rs-linux-autoconnect": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1753454170,
-        "narHash": "sha256-Uk4J2ZGHZFI6RX7pmGbdgxUWWdOegsNtJLc/aeBnj54=",
-        "owner": "KczBen",
-        "repo": "rs-linux-autoconnect",
-        "rev": "09a3f0fd0492573dd48468ab413626edd0cba757",
-        "type": "github"
-      },
-      "original": {
-        "owner": "KczBen",
-        "repo": "rs-linux-autoconnect",
-        "type": "github"
       }
     },
     "std": {

@@ -6,7 +6,7 @@
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](./LICENSE)
 <!-- END generated:badges -->
 
-Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, RS_ASIO, and declarative Home Manager module.
+Rocksmith 2014 packaged for NixOS — WineASIO, RS_ASIO, and a declarative Home Manager module.
 
 <!-- BEGIN generated:upstream -->
 ## Upstream
@@ -23,7 +23,7 @@ Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, RS_ASIO, and dec
 
 A Nix flake that wires together every Linux component needed to play Rocksmith 2014 on NixOS:
 
-- **Four packages** — `patch-rocksmith` shell helper, `wineasio-32` (32-bit Wine ASIO bridge), `rs-autoconnect` (JACK auto-connect shim), `rs-asio` (Rocksmith's ASIO wrapper DLL)
+- **Three packages** — `patch-rocksmith` shell helper, `wineasio-32` (32-bit Wine ASIO bridge), `rs-asio` (Rocksmith's ASIO wrapper DLL)
 - **Home Manager module** — generates `RS_ASIO.ini` + `Rocksmith.ini` declaratively, deploys DLLs into the Proton prefix on every launch, exports a `rocksmith-launch` Steam wrapper that does the dance automatically
 - **Optional GoXLR Line-In routing** — WirePlumber rules wiring guitar input through GoXLR Mini/Full
 - **Eval + format CI** — no upstream-tracking workflow (own code), weekly `flake.lock` maintenance only
@@ -34,7 +34,6 @@ A Nix flake that wires together every Linux component needed to play Rocksmith 2
 |---------|------|-------------|
 | `patch-rocksmith` | x86_64 | Shell script to register WineASIO in a Rocksmith Proton prefix |
 | `wineasio-32` | i686 | 32-bit ASIO-to-JACK driver for Wine (bridges Wine ASIO → PipeWire JACK) |
-| `rs-autoconnect` | i686 | `librsshim.so` — shim library that auto-connects Rocksmith's JACK ports to PipeWire |
 | `rs-asio` | x86_64 | RS_ASIO v0.7.4 DLLs — ASIO driver wrapper that intercepts Rocksmith's audio calls |
 
 ## Home Manager Module
@@ -70,7 +69,7 @@ Guitar → 3.5mm cable → Audio Interface Line In
   → RS_ASIO → Rocksmith 2014
 ```
 
-On Windows, Rocksmith uses a native ASIO driver (e.g., GoXLR ASIO). On Linux, `wineasio-32` bridges Wine's ASIO calls to PipeWire's JACK emulation, and `rs-autoconnect` (`librsshim.so`) handles automatic JACK port routing. RS_ASIO.dll intercepts Rocksmith's audio initialization and redirects it through WineASIO.
+On Windows, Rocksmith uses a native ASIO driver (e.g., GoXLR ASIO). On Linux, `wineasio-32` bridges Wine's ASIO calls to PipeWire's JACK emulation, and RS_ASIO.dll intercepts Rocksmith's audio initialization and redirects it through WineASIO.
 
 <!-- BEGIN generated:installation -->
 ## Installation
@@ -179,7 +178,6 @@ Build individual packages:
 ```bash
 nix build .#patch-rocksmith
 nix build .#wineasio-32
-nix build .#rs-autoconnect
 nix build .#rs-asio
 ```
 
@@ -196,7 +194,6 @@ All GitHub Actions are pinned to full commit SHAs for reproducibility.
 
 - [re1n0/nixos-rocksmith](https://github.com/re1n0/nixos-rocksmith) — original NixOS flake
 - [nizo/linux-rocksmith](https://codeberg.org/nizo/linux-rocksmith) — Linux Rocksmith setup guides and patch scripts
-- [KczBen/rs-linux-autoconnect](https://github.com/KczBen/rs-linux-autoconnect) — JACK auto-connect shim library
 - [wineasio](https://github.com/wineasio/wineasio) — ASIO to JACK driver for Wine
 - [mdias/rs_asio](https://github.com/mdias/rs_asio) — Rocksmith ASIO wrapper (RS_ASIO)
 

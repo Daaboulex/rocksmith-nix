@@ -1,5 +1,5 @@
 {
-  description = "Rocksmith 2014 packaged for NixOS — WineASIO, rs-autoconnect, RS_ASIO, and launch wrapper";
+  description = "Rocksmith 2014 packaged for NixOS — WineASIO, RS_ASIO, and launch wrapper";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -22,10 +22,6 @@
       url = "git+https://codeberg.org/nizo/linux-rocksmith";
       flake = false;
     };
-    rs-linux-autoconnect = {
-      url = "github:KczBen/rs-linux-autoconnect";
-      flake = false;
-    };
   };
 
   outputs =
@@ -33,7 +29,6 @@
       flake-parts,
       self,
       linux-rocksmith,
-      rs-linux-autoconnect,
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
@@ -44,9 +39,6 @@
       flake.overlays.default = _final: prev: {
         patch-rocksmith = prev.callPackage ./pkgs/patch-rocksmith { inherit linux-rocksmith; };
         wineasio-32 = prev.pkgsi686Linux.callPackage ./pkgs/wineasio-32 { };
-        rs-autoconnect = prev.pkgsi686Linux.callPackage ./pkgs/rs-autoconnect {
-          inherit rs-linux-autoconnect;
-        };
         rs-asio = prev.callPackage ./pkgs/rs-asio { };
       };
 
@@ -63,9 +55,6 @@
         {
           packages.patch-rocksmith = pkgs.callPackage ./pkgs/patch-rocksmith { inherit linux-rocksmith; };
           packages.wineasio-32 = pkgs.pkgsi686Linux.callPackage ./pkgs/wineasio-32 { };
-          packages.rs-autoconnect = pkgs.pkgsi686Linux.callPackage ./pkgs/rs-autoconnect {
-            inherit rs-linux-autoconnect;
-          };
           packages.rs-asio = pkgs.callPackage ./pkgs/rs-asio { };
           packages.default = self'.packages.patch-rocksmith;
 
