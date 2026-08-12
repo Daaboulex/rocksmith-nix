@@ -205,7 +205,4 @@ All GitHub Actions are pinned to full commit SHAs for reproducibility.
 GPL-3.0 (inherited from upstream)
 
 <!-- BEGIN generated:footer -->
----
-
-*Maintained as part of the [Daaboulex](https://github.com/Daaboulex) NixOS ecosystem.*
 <!-- END generated:footer -->
