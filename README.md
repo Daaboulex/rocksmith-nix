@@ -38,7 +38,7 @@ A Nix flake that wires together every Linux component needed to play Rocksmith 2
 
 ## Home Manager Module
 
-The repo exports `homeManagerModules.default` — a full HM module that provides:
+The repo exports `homeModules.default` — a full HM module that provides:
 
 - **`rocksmith-launch`** wrapper script (set as Steam launch option)
 - **RS_ASIO.dll + avrt.dll** deployed from Nix store (no network at runtime)
@@ -117,7 +117,7 @@ inputs.rocksmith-nix = {
 nixpkgs.overlays = [ inputs.rocksmith-nix.overlays.default ];
 
 # HM module
-home-manager.sharedModules = [ inputs.rocksmith-nix.homeManagerModules.default ];
+home-manager.sharedModules = [ inputs.rocksmith-nix.homeModules.default ];
 ```
 
 ### 3. Enable in host HM config

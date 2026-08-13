@@ -42,8 +42,8 @@
         rs-asio = prev.callPackage ./pkgs/rs-asio { };
       };
 
-      flake.homeManagerModules.default = import ./hm-module.nix;
-      flake.homeManagerModules.rocksmith = import ./hm-module.nix;
+      flake.homeModules.default = import ./hm-module.nix;
+      flake.homeModules.rocksmith = import ./hm-module.nix;
 
       perSystem =
         {
