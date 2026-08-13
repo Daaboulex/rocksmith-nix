@@ -8,8 +8,6 @@ let
   cfg = config.myModules.home.rocksmith;
 
   # Rocksmith App ID for Proton prefix path
-  appId = "221680";
-  prefixDir = "${config.home.homeDirectory}/.steam/steam/steamapps/compatdata/${appId}/pfx";
 
   rsAsioIni = pkgs.writeText "RS_ASIO.ini" ''
     [Config]
