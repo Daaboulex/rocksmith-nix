@@ -10,7 +10,7 @@
     "args": null,
     "check": "wrapper"
   },
-  "description": "Rocksmith 2014 packaged for NixOS - WineASIO, rs-autoconnect, RS_ASIO, patch helper + Home Manager module",
+  "description": "Rocksmith 2014 packaged for NixOS - WineASIO, RS_ASIO, patch helper + Home Manager module",
   "topics": [
     "nix",
     "nixos",
