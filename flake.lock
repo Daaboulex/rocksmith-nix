@@ -80,11 +80,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786031233,
-        "narHash": "sha256-TIDlLTLI1/pB7IqgjzcKQjpODQsZE2oII4XGG9B6KjI=",
+        "lastModified": 1786826571,
+        "narHash": "sha256-nNqmXIFmESRnU91KARtiekSox0+o+E3AS0d1TuUQ/9o=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "7834e82588860aaf780cec1366524456a70898d7",
+        "rev": "c8058ecc1329a71a3c99c4d0353dba4009a66152",
         "type": "github"
       },
       "original": {
@@ -96,11 +96,11 @@
     "linux-rocksmith": {
       "flake": false,
       "locked": {
-        "lastModified": 1784208919,
-        "narHash": "sha256-YvxgNhxlvS9HuF27eQSIxs8lsiBixIB2IbDwVyAMgYc=",
+        "lastModified": 1786350458,
+        "narHash": "sha256-jiM8VfS8R1suq1gpQLmAtujQJjHcsWSbiHPHOki1MrE=",
         "ref": "refs/heads/main",
-        "rev": "40dfddcf501efd22894f566432e8647c4562b3c5",
-        "revCount": 252,
+        "rev": "fb66e2a337eeb241951df59cb84ed5e16b6f6958",
+        "revCount": 254,
         "type": "git",
         "url": "https://codeberg.org/nizo/linux-rocksmith"
       },
